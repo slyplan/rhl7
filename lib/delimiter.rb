@@ -13,6 +13,11 @@ module RHL7
       "^"
     end
 
+    def self.extract_from(message)
+      pure = message.strip
+      RHL7::Delimiter.new(:element => pure[3], :item => pure[4])
+    end
+
     attr_reader :segment
     attr_reader :element
     attr_reader :item

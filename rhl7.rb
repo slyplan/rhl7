@@ -6,7 +6,10 @@ module RHL7
     end
   end
 
-  class UnknownSegment < StandardError
+  class InvalidSegment < StandardError
+  end
+
+  class InvalidAttribute < StandardError
   end
 
 end
@@ -14,5 +17,7 @@ end
 require './lib/delimiter.rb'
 require './lib/message.rb'
 require './lib/segment.rb'
-require './lib/message/base.rb'
+require './lib/abstract_message.rb'
+require './lib/abstract_segment.rb'
 require './lib/segment/base.rb'
+Dir[File.dirname(__FILE__) + '/lib/segment/*.rb'].each { |file| require file }

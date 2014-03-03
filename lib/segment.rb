@@ -1,21 +1,18 @@
 module RHL7
   module Segment
 
-    def self.parse(seg, delimiters = RHL7::Delimiter)
+    def self.parse(seg, delimiters = nil)
       pure = seg.strip
-
-      raw_items = pure.split(delimiters.element)
-      seg_name = raw_items.delete_at(0).upcase.to_sym
-
-      segment = get_segment_class(seg_name).new(raw_items, delimiters)
-      segment.set_name(seg_name)
+      seg_name = pure[0..2].upcase.to_sym
+      segment_class = get_segment_class(seg_name)
+      segment_class.parse(pure, delimiters)
     end
 
     def self.get_segment_class(seg)
       if RHL7::Segment.const_defined?(seg)
         RHL7::Segment.const_get(seg)
       else
-        Class.new(RHL7::Segment::Base)
+        RHL7::AbstractSegment
       end
     end
 
