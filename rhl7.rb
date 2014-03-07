@@ -6,6 +6,9 @@ module RHL7
     end
   end
 
+  class InvalidObject < StandardError
+  end
+
   class InvalidSegment < StandardError
   end
 
@@ -15,6 +18,8 @@ module RHL7
 end
 
 require './lib/delimiter.rb'
+require './lib/attributes.rb'
+require './lib/abstract_object.rb'
 require './lib/message.rb'
 require './lib/segment.rb'
 require './lib/data_type.rb'
