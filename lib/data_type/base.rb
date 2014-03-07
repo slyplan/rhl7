@@ -1,6 +1,6 @@
 module RHL7
-  module Segment
-    class Base < RHL7::AbstractSegment
+  module DataType
+    class Base < RHL7::AbstractDataType
 
       def self.inherited(subclass)
         subclass.class_eval do 
@@ -19,7 +19,7 @@ module RHL7
 
       def self.attribute(attr_name, options = {})
         attr_name = attr_name.to_sym
-        raise InvalidAttribute.new("Already defined attribute #{attr_name} in segment #{self.name}")  if @attr_hash.has_key?(attr_name)
+        raise InvalidAttribute.new("Already defined attribute #{attr_name} in datatype #{self.name}")  if @attr_hash.has_key?(attr_name)
         raise InvalidAttribute.new("Couldn't define attribute with name #{attr_name}")  if self.instance_methods.include?(attr_name) || self.instance_methods.include?("#{attr_name}=".to_sym)
         default_options = {:type => :ST, :optional => true, :default => nil}
         opt = default_options.merge(options.select{|k| default_options.has_key?(k)})
@@ -39,8 +39,7 @@ module RHL7
       end
 
       def initialize(fields = nil, delims = RHL7::Delimiter)
-        raise RHL7::InvalidSegment.new("Couldn't initialize Base segment")  if self.class.name == "RHL7::Segment::Base"
-        set_name(self.class.name.split("::").last.upcase.to_sym)  if name.nil?
+        raise RHL7::InvalidSegment.new("Couldn't initialize Base datatype")  if self.class.name == "RHL7::DataType::Base"
         fields = fields || default_attrs
         super(fields, delims)
       end
@@ -61,7 +60,7 @@ module RHL7
 
       def real_index(field)
         return super(field)  unless field.is_a?(Symbol)
-        raise RHL7::InvalidAttribute.new("Undefined attribute #{field} in segment #{name}")  unless has_field?(field)
+        raise RHL7::InvalidAttribute.new("Undefined attribute #{field} in datatype #{name}")  unless has_field?(field)
         attr_hash[field.to_sym][:idx]
       end
 
@@ -73,7 +72,7 @@ module RHL7
         if idx.is_a?(Symbol)
           attr_hash[idx]
         else
-          raise RHL7::InvalidAttribute.new("There isn't attribute with index #{idx} in segment #{name}")  unless valid_attr_index?(idx)
+          raise RHL7::InvalidAttribute.new("There isn't attribute with index #{idx} in datatype #{name}")  unless valid_attr_index?(idx)
           attr_hash.values.select { |v| v[:idx] == idx }.first
         end
       end

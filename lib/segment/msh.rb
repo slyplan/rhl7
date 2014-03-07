@@ -10,7 +10,7 @@ module RHL7
       attribute :recv_facility
       attribute :time
       attribute :security
-      attribute :message_type
+      attribute :message_type, type: :MSG, optional: false
       attribute :message_control_id
       attribute :processing_id
       attribute :version_id
