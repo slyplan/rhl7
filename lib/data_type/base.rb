@@ -1,8 +1,9 @@
 module RHL7
   module DataType
-    class Base < RHL7::AbstractDataType
+    class Base < RHL7::AbstractObject
 
-      include RHL7::Attributes
+      object_delimiter :item
+      extend RHL7::Defineable
 
     end
   end

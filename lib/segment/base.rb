@@ -2,11 +2,11 @@ module RHL7
   module Segment
     class Base < RHL7::AbstractSegment
 
-      include RHL7::Attributes
+      extend RHL7::Defineable
 
-      def initialize(fields = nil, delims = RHL7::Delimiter)
+      def initialize(delims)
         @name = self.class.name.split("::").last.upcase.to_sym  if name.nil?
-        super(fields, delims)
+        super(delims)
       end
 
     end

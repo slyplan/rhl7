@@ -7,7 +7,7 @@ module RHL7
       delim = RHL7::Delimiter.extract_from(msg)
       raw_segments = pure.split(RHL7::Delimiter.segment)
       parsed_segments = raw_segments.map do |str| 
-        seg = RHL7::Segment.parse(str, delim)
+        RHL7::Segment.parse(str, delim)
       end
       get_message_class.new(parsed_segments, delim)
     end

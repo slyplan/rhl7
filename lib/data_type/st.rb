@@ -1,18 +1,22 @@
 module RHL7
   module DataType
+    #HL7 string datatype
     class ST < String
 
       attr_reader :delimiters
 
-      def initialize(str, delims = RHL7::Delimiter)
+      def initialize(delims)
         @delimiters = delims
-        str = str.join(delimiters.item) if str.is_a?(Array)
         @elem_escape_char = "/H/"
         @item_escape_char = "/E/"
+        super("")
+      end
 
-        str = str.gsub(@elem_escape_char, delimiters.element)
-        str = str.gsub(@item_escape_char, delimiters.item)
-        super(str)
+      def parse(obj)
+        obj = obj.gsub(@elem_escape_char, delimiters.element)
+        obj = obj.gsub(@item_escape_char, delimiters.item)
+        clear
+        concat obj
       end
 
       def to_s

@@ -1,23 +1,19 @@
 module RHL7
   class AbstractObject
 
-    attr_reader :attrs
-    attr_reader :name
-    attr_reader :delimiters
-    attr_accessor :delimiter
-    attr_reader :object_type
+    def self.set_defenition(def_obj = nil)
+      @defenition = def_obj || RHL7::Defenition.new(self)
+    end
+
+    def self.defenition
+      @defenition
+    end
 
     def self.inherited(subclass)
-      subclass.object_type self.get_object_type
+      # new_defenition = self.defenition.nil? ? RHL7::Defenition.new(self) : self.defenition.dup
+      # new_defenition.defenition_for(subclass)
+      subclass.set_defenition # new_defenition
       subclass.object_delimiter self.get_object_delimiter
-    end
-
-    def self.object_type(sym)
-      @object_type = sym
-    end
-
-    def self.get_object_type
-      @object_type || :abstract
     end
 
     def self.object_delimiter(sym)
@@ -28,68 +24,83 @@ module RHL7
       @object_delimiter || RHL7::Delimiter.segment
     end
 
-    def initialize(fields = nil, delims = RHL7::Delimiter)
-      raise RHL7::InvalidObject.new("Couldn't initialize Base #{object_type}")  if self.class.name.downcase == "rhl7::#{object_type}::base"
-      fields = fields || default_attrs
-      delimiter = delims.send self.class.get_object_delimiter
-      @object_type = self.class.get_object_type
-      @attrs = []  if @attrs.nil?
+    attr_reader :delimiters
+    attr_reader :delimiter
+    attr_reader :values
+    attr_reader :defenition
+
+    def initialize(delims)
+      puts "Initialized: #{self.class.name}"
+      @values = []  if @values.nil?
       @delimiters = delims
-      fill_attrs(fields)
+      @delimiter = delimiters.send self.class.get_object_delimiter
+      set_defenition
     end
 
     def [](idx)
-      get_attr(real_index(idx))
+      get_value(defenition[idx].real_index)
     end
 
     def []=(idx, val)
-      set_attr(real_index(idx), val)
+      res = defenition[idx].parse val, delimiters
+      add_value res
     end
 
     def to_s
-      attrs[0..(attrs.rindex { |f| !f.nil? })].join(delimiter)
+      values.empty? ?
+      "" : 
+      values[0..(values.rindex { |f| !f.nil? })].join(delimiter)
+    end
+
+    def parse(obj)
+      parse_handler = "load_from_#{obj.class.name.split("::").last.downcase}".to_sym
+      raise RHL7::InvalidObject.new("Couldn't parse #{obj.class.name} as #{self.class.name}")  unless respond_to?(parse_handler)
+      self.send parse_handler, obj
+      self
+    end
+
+    def load_from_string(str)
+      attrs = split_by_delimiter(str)
+      attrs.each_with_index do |att, index|
+        self[index + 1] = att
+      end
+    end
+
+    def load_from_array(arr)
+      arr.each_with_index do |att, index|
+        self[index + 1] = att
+      end
     end
 
     private
 
-    def get_attr(idx)
-      @attrs[idx]
+    def split_by_delimiter(str)
+      str.strip.split(delimiter).map{|r| r  unless r.empty? }
     end
 
-    def set_attr(idx, val)
-      @attrs[idx] = RHL7::DataType.parse(val, get_type_by(idx), delimiters)
+    def set_defenition
+      defenition_object = self.class.defenition.dup
+      defenition_object.defenition_for(self)
+      defenition_object.freeze
+      @defenition = defenition_object
     end
 
-    def real_index(idx)
-      raise RHL7::InvalidAttribute.new("There isn't attribute with index #{idx} in #{object_type} #{name}")  unless valid_attr_index?(idx)
-      idx.to_i - 1
+    def get_value(idx)
+      @values[idx]
     end
 
-    def get_type_by(real_idx)
-      nil
+    def set_value(idx, val)
+      @values[idx] = val
     end
 
-    def fill_attrs(from_obj)
-      meth = "attrs_from_#{from_obj.class.name.split("::").last.downcase}".to_sym
-      raise RHL7::InvalidObject.new("Couldn't extract attributes from #{from_obj.class.name}")  unless respond_to?(meth, true)
-      self.send meth, from_obj
-    end
-
-    def attrs_from_array(arr)
-      i = 0
-      arr.each do |val|
-        set_attr(i, val)
-        i += 1 
+    def add_value(val)
+      if val.respond_to?(:"_index_")
+        idx = val._index_
+        val.instance_eval { undef :"_index_"}
+        set_value(idx, val)
+      else
+        raise RHL7::InvalidObject.new("Couldn't add value")  
       end
-    end
-
-    def valid_attr_index?(idx)
-      limit = attr_idx.nil? ? true : attr_idx > idx
-      idx > 0 && limit
-    end
-
-    def default_attrs
-      []
     end
 
   end

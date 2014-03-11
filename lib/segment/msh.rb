@@ -8,7 +8,7 @@ module RHL7
       attribute :sending_facility
       attribute :recv_app
       attribute :recv_facility
-      attribute :time
+      attribute :time, type: :TS
       attribute :security
       attribute :message_type, type: :MSG, optional: false
       attribute :message_control_id
@@ -24,15 +24,23 @@ module RHL7
       attribute :alternate_character_set_handling_scheme
       attribute :message_profile_identifier
 
-      def initialize(fields = nil, delims = RHL7::Delimiter)
-        if fields.kind_of?(Array)
-          fields.unshift(delims.element)
-        end
-        super(fields, delims)
+      def to_s
+       [name, values[1..(values.rindex { |f| !f.nil? })]].flatten.join(delimiter)
       end
 
-      def to_s
-       [name, attrs[1..(attrs.rindex { |f| !f.nil? })]].flatten.join(attrs[0])
+      def load_from_string(str)
+        attrs = split_by_delimiter(str)
+        attrs[0] = delimiter
+        attrs.each_with_index do |att, index|
+          self[index + 1] = att
+        end
+      end
+
+      def load_from_array(arr)
+        arr[0] = delimiter
+        arr.each_with_index do |att, index|
+          self[index + 1] = att
+        end
       end
 
     end
