@@ -9,6 +9,9 @@ module RHL7
         super(delims)
       end
 
+      def set_name(nm)
+      end
+
     end
   end
 end

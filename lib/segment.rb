@@ -5,6 +5,7 @@ module RHL7
       seg_name = extract_name(str)
       seg_class = segment_class(seg_name)
       seg = seg_class.new(delims)
+      seg.set_name(seg_name)
       seg.parse str
       seg
     end

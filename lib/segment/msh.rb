@@ -43,6 +43,10 @@ module RHL7
         end
       end
 
+      def before_assign(msg)
+        msg.load_scheme(message_type.message_code, message_type.trigger_event)
+      end
+
     end
   end
 end

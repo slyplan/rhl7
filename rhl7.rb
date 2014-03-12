@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module RHL7
 
   class MissingSegment < StandardError
@@ -6,7 +8,13 @@ module RHL7
     end
   end
 
+  class InvalidMessage < StandardError
+  end
+
   class InvalidObject < StandardError
+  end
+
+  class InvalidScheme < StandardError
   end
 
   class InvalidSegment < StandardError
@@ -17,6 +25,7 @@ module RHL7
 
 end
 
+require './lib/scheme.rb'
 require './lib/delimiter.rb'
 require './lib/attribute.rb'
 require './lib/defenition.rb'

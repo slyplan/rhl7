@@ -26,7 +26,7 @@ module RHL7
       @optional
     end
 
-    def mandatory?
+    def required?
       !@optional
     end
 
@@ -50,7 +50,7 @@ module RHL7
 
     def parse(obj, delims)
       obj ||= default
-      raise RHL7::InvalidAttribute.new("Attribute #{name} must be present")  if mandatory? && obj.nil?
+      raise RHL7::InvalidAttribute.new("Attribute #{name} must be present")  if required? && obj.nil?
       if optional? && obj.nil?
         res_obj = nil
       elsif obj.class == datatype
