@@ -31,10 +31,6 @@ module RHL7
       @scope_stack = []
     end
 
-    # def segments
-    #   @segments.values
-    # end
-
     def assign(segment)
       segment.before_assign(self)  if segment.respond_to?(:before_assign)
       real_assign(segment)
@@ -53,17 +49,41 @@ module RHL7
       end
     end
 
-    # def [](idx)
-    #   # idx = idx.to_s.to_sym if idx.kind_of?(Fixnum)
-    #   @segments[idx]
-    # end
-
     def to_s
       segments.compact.join(@delimiters.segment)
     end
 
     def scheme_defined?
       !@scheme.nil?
+    end
+
+    #upgrade this
+    def [](idx)
+      seg_nm = idx.to_s[0..2].to_sym
+      muli_idx = idx.to_s[3..-1]
+
+      segs = segments_by_scope("main").select{ |s| s.name == seg_nm}
+      if segs.empty?
+        res = nil  
+      elsif segs.size == 1
+        res = segs.first
+      else
+        res = segs[muli_idx.to_i]
+      end
+
+      unless res.nil?
+        seg_idx = @segments.find_index { |s| s == res}
+        unless @segments_order[seg_idx].children.nil?
+          hsh_res = {:self => res}
+          @segments_order[seg_idx].children.keys.each_with_index do |seg_def, offset|
+            hsh_res[seg_def] = segments[seg_idx + offset]
+          end
+
+          return hsh_res
+        end
+      end
+
+      res
     end
 
     private
@@ -178,40 +198,10 @@ module RHL7
 
         return_scope  if defenition.scope_returner
 
-        # seg_def = @segments_order[@assigning_counter]
-        # raise RHL7::InvalidMessage.new("Missing required segment #{defenition.name} in message #{name}")  if segment.nil? && defenition.required?
-        # if segment.name == defenition.name
-        #   raise RHL7::InvalidMessage.new("Segment #{defenition.name} should not be in message #{name}")  unless defenition.exists?
-        #   if defenition.single?
-        #     @segments[@assigning_counter] = segment
-        #   else
-        #     @segments[@assigning_counter] = []  if @segments[@assigning_counter].nil?
-        #     raise RHL7::InvalidMessage.new("Invalid order of #{segment.name} got: #{segment[0]}, expected: {@segments[@assigning_counter].size} in message #{name}")  if segment[0].to_i != @segments[@assigning_counter].size
-        #     @segments[@assigning_counter] << segment
-
-
-        # end
       else
         @segments[@assigning_counter] = segment
       end
     end
-
-    # def initialize(segments = [], delimiters = RHL7::Delimiter)
-    #   @segments = segments
-    #   @delimiters =  delimiters
-    # end
-
-    # def [](idx)
-    #   @segments[idx]
-    # end
-
-    # def []=(idx, val)
-    #   @segments[idx] = val
-    # end
-
-    # def to_s
-    #   @segments[0..(@segments.rindex { |f| !f.nil? })].join(@delimiters.segment)
-    # end
 
   end
 end
