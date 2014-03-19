@@ -4,6 +4,7 @@ module RHL7
     object_delimiter :element
 
     attr_reader :name
+    attr_accessor :message
     attr_accessor :scope
 
     def to_s

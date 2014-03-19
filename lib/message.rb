@@ -151,7 +151,10 @@ module RHL7
     end
 
     def set_segment(value)
-      value.scope = current_scope  unless value.nil?
+      unless value.nil?
+        value.scope = current_scope  
+        value.message = self
+      end
       @segments[@assigning_counter] = value
     end
 
