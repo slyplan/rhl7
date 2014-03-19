@@ -13,5 +13,15 @@ class RHL7::Scheme
       end
     end
 
+    event :S04 do
+      segment :MSH, optional: false, multiple: false
+      segment :ARQ, optional: false, multiple: false
+    end 
+
+    event :S06 do
+      segment :MSH, optional: false, multiple: false
+      segment :ARQ, optional: false, multiple: false
+    end
+
   end
 end
